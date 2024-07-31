@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Text, VStack, useBreakpointValue } from '@chakra-ui/react';
+import axios from 'axios';
 
 const ContactDetails = () => {
     const { id } = useParams();
@@ -9,10 +10,12 @@ const ContactDetails = () => {
 
     React.useEffect(() => {
         const fetchContact = async () => {
-            const storedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-            const contact = storedContacts.find((contact) => contact.id === parseInt(id));
-            if (contact) {
-                setContact(contact);
+            try {
+                const response = await axios.get(`http://localhost:5000/contacts/${id}`);
+                setContact(response.data);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du contact', error);
+                setContact(null);
             }
         };
         fetchContact();

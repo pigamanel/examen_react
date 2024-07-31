@@ -15,6 +15,7 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 import { ViewIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import axios from 'axios';
 
 const ContactList = () => {
     const [contacts, setContacts] = useState([]);
@@ -23,14 +24,24 @@ const ContactList = () => {
     const [sortCriteria, setSortCriteria] = useState('');
 
     useEffect(() => {
-        const storedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-        setContacts(storedContacts);
+        const fetchContacts = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/contacts');
+                setContacts(response.data);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des contacts', error);
+            }
+        };
+        fetchContacts();
     }, []);
 
-    const handleDelete = (id) => {
-        const updatedContacts = contacts.filter((contact) => contact.id !== id);
-        setContacts(updatedContacts);
-        localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/contacts/${id}`);
+            setContacts(contacts.filter(contact => contact.id !== id));
+        } catch (error) {
+            console.error('Erreur lors de la suppression du contact', error);
+        }
     };
 
     const filteredContacts = contacts
@@ -66,17 +77,7 @@ const ContactList = () => {
                 borderRadius="md"
                 boxShadow="sm"
             />
-            <Select
-                placeholder="Filtrer par rôle"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                mb={4}
-                borderRadius="md"
-                boxShadow="sm"
-            >
-                <option value="admin">Admin</option>
-                <option value="simple">Simple</option>
-            </Select>
+
             <Select
                 placeholder="Trier par"
                 value={sortCriteria}

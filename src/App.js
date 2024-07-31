@@ -1,23 +1,32 @@
+// src/App.js
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import ContactList from './components/ContactList';
+import HomePage from './components/HomePage';
 import ContactForm from './components/ContactForm';
-import EditContact from './components/EditContact';
+import ContactList from './components/ContactList';
 import ContactDetails from './components/ContactDetails';
+import EditContact from './components/EditContact';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
 
 function App() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === '/login' || location.pathname === '/register';
+
   return (
-    <div>
-      <Navbar />
+    <>
+      {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<ContactList />} />
-        <Route path="/list" element={<ContactList />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/add" element={<ContactForm />} />
-        <Route path="/edit/:id" element={<EditContact />} />
+        <Route path="/list" element={<ContactList />} />
         <Route path="/details/:id" element={<ContactDetails />} />
+        <Route path="/edit/:id" element={<EditContact />} />
       </Routes>
-    </div>
+    </>
   );
 }
 

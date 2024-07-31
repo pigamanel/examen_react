@@ -1,3 +1,4 @@
+// src/components/ContactForm.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,6 +12,7 @@ import {
     StackDivider,
     FormErrorMessage
 } from '@chakra-ui/react';
+import axios from 'axios';
 
 const ContactForm = () => {
     const [contact, setContact] = useState({
@@ -21,8 +23,14 @@ const ContactForm = () => {
     });
 
     const [errors, setErrors] = useState({});
-
     const navigate = useNavigate();
+
+    // Vérifiez le rôle de l'utilisateur
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || user.role !== 'admin') {
+        navigate('/list');
+        return null;
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -51,14 +59,15 @@ const ContactForm = () => {
         return Object.keys(tempErrors).every(key => !tempErrors[key]);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
-            const storedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-            const newContact = { ...contact, id: Date.now() }; // Ajoutez un identifiant unique à chaque contact
-            storedContacts.push(newContact);
-            localStorage.setItem('contacts', JSON.stringify(storedContacts));
-            navigate('/list');
+            try {
+                await axios.post('http://localhost:5000/contacts', contact);
+                navigate('/list');
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout du contact', error);
+            }
         }
     };
 

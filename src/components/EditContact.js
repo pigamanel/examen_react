@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, FormControl, FormLabel, Input, Alert, VStack } from '@chakra-ui/react';
+import axios from 'axios';
 
 const EditContact = () => {
     const { id } = useParams();
@@ -10,13 +11,16 @@ const EditContact = () => {
     const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        const storedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-        const foundContact = storedContacts.find(contact => contact.id === parseInt(id));
-        if (foundContact) {
-            setContact(foundContact);
-        } else {
-            setError('Contact non trouvé');
-        }
+        const fetchContact = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/contacts/${id}`);
+                setContact(response.data);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du contact', error);
+                setError('Contact non trouvé');
+            }
+        };
+        fetchContact();
     }, [id]);
 
     const handleChange = (e) => {
@@ -27,17 +31,17 @@ const EditContact = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const storedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-        const updatedContacts = storedContacts.map(c =>
-            c.id === contact.id ? contact : c
-        );
-        localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-        setSuccess('Contact mis à jour avec succès');
-        setTimeout(() => {
-            navigate('/list');
-        }, 1500); // Temporisation pour permettre à l'utilisateur de lire le message de succès
+        try {
+            await axios.put(`http://localhost:5000/contacts/${contact.id}`, contact);
+            setSuccess('Contact mis à jour avec succès');
+            setTimeout(() => {
+                navigate('/list');
+            }, 1500); // Temporisation pour permettre à l'utilisateur de lire le message de succès
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour du contact', error);
+        }
     };
 
     return (
